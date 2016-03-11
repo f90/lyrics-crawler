@@ -11,11 +11,10 @@ def make_song_title(song_title):
     s = s.strip()
     return " ".join(s.split())
 
-
 def main(argv):
     inputfile = ''
     outputfile = ''
-    output_path = ''
+    output_path = 'newlyrics'
     verse_count = 2
     chorus_count = 1
     verse_length = 5
@@ -46,9 +45,11 @@ def main(argv):
 
     if not inputfile:
         raise ValueError("Usage: makeasong.py -i <inputfile> -o <outputfile>")
+
     print "starting"
     f = open(inputfile)
-    # TODO: Don't read the file to memory if its too large
+    # TODO: Shouldn't read the whole file into memory if it is
+    # a very large file!!
     entire_file = f.read()
     # split the whole file into a list
     file_in_a_list = entire_file.split("\n")
