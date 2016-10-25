@@ -8,11 +8,8 @@
 import scrapy
 from scrapy.item import Item, Field
 
-
-class AzlyricsItem(Item):
-    lyrics = Field()
-
-
 class LyricsItem(Item):
+    artist = Field()
+    song = Field()
     lyrics = Field()
-
+    lyricsURL = Field()

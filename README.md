@@ -1,10 +1,15 @@
-# Random Song Lyrics Generator
+# LyricsCrawler (for Metrolyrics)
 
-This is a simple web crawler excercise - Basically it extracts all of the lyrics (all artis from A to Z) from a well known lyric site and saves them to a local file and generates random 'song lyrics' using the extracted lyrics as the source.
+Automatically downloads lyrics for the top X songs of each artist on the metrolyrics database, and saves them into a CSV along with the artist, song name, and URL.
+
+Currently filters out non-English lyrics using langid, but the specific language can be easily adapted. Also filters out broken lyrics.
+
+Supports resuming the download after application crash or internet failure.
+Built on the basic example at https://github.com/vmm/lyrics-generator
 
 ## Usage and requirements
 
-### Web crawler
+### Required packages
 The web crawler is based on python Scrapy project - find documentation from http://scrapy.org/. 
 
 1) Install Scrapy:
@@ -13,35 +18,36 @@ The web crawler is based on python Scrapy project - find documentation from http
 pip install scrapy
  ```
 
-2) Run the spider of your choise. Metrolyrics.com crawler is provided as an example
+2) For language filtering, langid is used (https://github.com/saffsd/langid.py). Install langid as follows:
+
+```sh
+pip install langid
+```
+
+### Settings (optional)
+
+Open the settings.py file inside the metrolyrics folder to change the settings. In particular, the number of concurrent requests, the path for the lyrics output, and the number of songs crawled for each artist can be set.
+
+### Usage
+
+1) Starting the crawler:
 
 ```sh
 # Go to the scrapy project top level folder
 cd crawlers
 
-# Run the spider - output the results as simple csv file (json etc is also possible)
-scrapy crawl metrolyrics -o ../lyricdb/lyrics.csv -t csv
+# Run the spider - output the results as simple csv file with lyrics, lyrics URL, song name, and artist name as columns.
+scrapy crawl metrolyrics -s JOBDIR=jobstate
 ```
 
-Go and do something else. You'll probably end up with 2M rows of extracted lyrics.
+The current crawler state is saved for later resuming. By default, results are saved in "lyrics.csv" in the same folder.
 
+2) Resuming the crawler:
 
-## Make some song lyrics
-
-Run the simple python script which picks out random rows from the file and mixes them up. The ouput is saved under newlyrics/ folder and the name of the file is the title of the new song
-
+Make sure your previous lyrics file is still in the same location, then execute 
 ```sh
-# lyrics with default values
-python makeasong.py -i "lyricdb/lyrics.csv"
-
-# you can also choose how many verses or choruses and how long (rows) they are
-python makeasong.py -i "lyricdb/a_to_z.csv" -o newlyrics  --verses 3 --verse_lenght 10 --choruses 1
+scrapy crawl metrolyrics -s JOBDIR=jobstate
 ```
 
-## Demo
-
-Small demo app with limited lyrics is running at:
-
-http://lucky-curve-775.appspot.com/
-
+The newly downloaded lyrics should now be appended to the already existing ones.
 

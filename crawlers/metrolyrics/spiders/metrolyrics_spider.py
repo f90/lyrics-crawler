@@ -1,7 +1,7 @@
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
-from scrapy.selector import HtmlXPathSelector
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors.sgml import SgmlLinkExtractor
 from metrolyrics.items import LyricsItem
+
 from scrapy.http import Request
 import re
 import string
@@ -10,7 +10,18 @@ extract_alphabets = list(string.ascii_lowercase)
 base_url = 'http://www.metrolyrics.com/artists-%s-1.html'
 
 def clean_html_but_br(string):
-    return re.sub("<.*>", " ", string).split("\n \n")
+    # This HTML tag triggers a new paragraph, so we convert it into two line breaks
+    cleaned = re.sub("<p.*?>", "\n\n", string)
+
+    cleaned = re.sub("<.*?>", "", cleaned) # Remove all other html tags (br tags all have newlines already)
+
+    # Clean up beginning and end
+    cleaned = cleaned.strip()
+    cleaned = cleaned.strip("\n")
+    cleaned = cleaned.strip("\"")
+
+    cleaned = cleaned.replace(",", "") # Remove comma as this is our delimiter (we will remove more special characters later anyway)
+    return cleaned
 
 class MetroLyricsSpider(CrawlSpider):
     name = 'metrolyrics'
@@ -27,20 +38,40 @@ class MetroLyricsSpider(CrawlSpider):
         # -> http://www.metrolyrics.com/patsy-cline-lyrics.html
         Rule(SgmlLinkExtractor(allow=('http://www.metrolyrics.com/.*', ),
                                restrict_xpaths="//table[@class='songs-table']"), 
-             callback='parse_artist'),
+             callback='parse_page'),
     )
 
-    def parse_artist(self, response):
+    def parse_page(self, response):
+        item = LyricsItem()
+        item["artist"] = response.xpath("//div[@class='artist-header content-header row']/div/h1/text()").extract()[0].strip()
+
         top_list_song = response.xpath("//table")
-        for url in top_list_song.xpath(".//a/@href").extract()[2:4]:
-            yield Request(url, callback=self.parse_lyrics)
+
+        songList = top_list_song.xpath(".//a/@href").extract()
+        for url in songList[0:min(self.settings["SONGS_PER_ARTIST"], len(songList) - 1)]:
+            print "URL " + url
+
+        for url in songList[0:min(self.settings["SONGS_PER_ARTIST"], len(songList) - 1)]:
+
+            item["lyricsURL"] = url
+
+            req = Request(url, callback=self.parse_lyrics)
+            req.meta["item"] = item
+
+            return req
 
 
     def parse_lyrics(self, response):
-        item = LyricsItem()
+        item = response.meta["item"]
+
+        songName = response.xpath("//div[@class='lyrics']/header/h1/text()").extract()[0]
+        songName = songName[1:-8] # Cut off "Lyrics" and line break
 
         lyrics = response.xpath("//div[@id='lyrics-body-text']").extract()[0]
+        lyrics = lyrics.encode('ascii', 'ignore') # Convert to ASCII, drop other characters
 
-        item['lyrics'] = clean_html_but_br(lyrics)
-        return item 
+        item["lyrics"] = clean_html_but_br(lyrics)
+        item["song"] = songName.strip()
+
+        return item
 
