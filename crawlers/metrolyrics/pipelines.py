@@ -43,13 +43,13 @@ class LyricsPipeline(object):
         # Only export decently sized, English language lyrics that do not have an overwhelming number of special characters.
         text = item["lyrics"]
         if len(text) < 20:
-            print "LYRICS TOO SHORT FOR SONG " + item["song"]
+            print("LYRICS TOO SHORT FOR SONG " + item["song"])
             return item
         if float(len(re.sub('\W+', '', text))) / float(len(text)) < 0.5:
-            print "LYRICS CONTAIN TOO MANY SPECIAL CHARACTERS FOR SONG " + item["song"]
+            print("LYRICS CONTAIN TOO MANY SPECIAL CHARACTERS FOR SONG " + item["song"])
             return item
         if langid.classify(text)[0] != "en":
-            print "LYRICS ARE NOT ENGLISH FOR SONG " + item["song"]
+            print("LYRICS ARE NOT ENGLISH FOR SONG " + item["song"])
             return item
         self.exporter.export_item(item)
         return item

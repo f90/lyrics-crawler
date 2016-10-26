@@ -1,5 +1,5 @@
 from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.linkextractors import LinkExtractor
 from metrolyrics.items import LyricsItem
 
 from scrapy.http import Request
@@ -32,33 +32,33 @@ class MetroLyricsSpider(CrawlSpider):
         start_urls.append(base_url % a)
     rules = (
         # Extract links matching to pagination and allow to follow them
-        Rule (SgmlLinkExtractor(restrict_xpaths=('//a[@class="button next"]',)), follow=True),
+        Rule (LinkExtractor(restrict_xpaths=('//a[@class="button next"]',)), follow=True),
 
         # Extract links matching 'item.php' and parse them with the spider's method parse_item
         # -> http://www.metrolyrics.com/patsy-cline-lyrics.html
-        Rule(SgmlLinkExtractor(allow=('http://www.metrolyrics.com/.*', ),
+        Rule(LinkExtractor(allow=('http://www.metrolyrics.com/.*', ),
                                restrict_xpaths="//table[@class='songs-table']"), 
              callback='parse_page'),
     )
 
     def parse_page(self, response):
-        item = LyricsItem()
-        item["artist"] = response.xpath("//div[@class='artist-header content-header row']/div/h1/text()").extract()[0].strip()
+        artist = response.xpath("//div[@class='artist-header content-header row']/div/h1/text()").extract()[0].strip()
 
         top_list_song = response.xpath("//table")
 
         songList = top_list_song.xpath(".//a/@href").extract()
         for url in songList[0:min(self.settings["SONGS_PER_ARTIST"], len(songList) - 1)]:
-            print "URL " + url
+            print("URL " + url)
 
         for url in songList[0:min(self.settings["SONGS_PER_ARTIST"], len(songList) - 1)]:
-
+            item = LyricsItem()
             item["lyricsURL"] = url
+            item["artist"] = artist
 
             req = Request(url, callback=self.parse_lyrics)
             req.meta["item"] = item
 
-            return req
+            yield req
 
 
     def parse_lyrics(self, response):
