@@ -68,7 +68,9 @@ class MetroLyricsSpider(CrawlSpider):
         songName = songName[1:-8] # Cut off "Lyrics" and line break
 
         lyrics = response.xpath("//div[@id='lyrics-body-text']").extract()[0]
-        lyrics = lyrics.encode('ascii', 'ignore') # Convert to ASCII, drop other characters
+        # Drop non-printable characters
+        printable = set(string.printable)
+        lyrics = filter(lambda x: x in printable, lyrics)
 
         item["lyrics"] = clean_html_but_br(lyrics)
         item["song"] = songName.strip()
