@@ -1,6 +1,6 @@
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
-from metrolyrics.items import LyricsItem
+from lyrics.items import LyricsItem
 
 from scrapy.http import Request
 import re

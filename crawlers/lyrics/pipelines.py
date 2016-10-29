@@ -24,13 +24,12 @@ class LyricsPipeline(object):
         self.filename = settings["EXPORT_PATH"]
 
     def spider_opened(self, spider):
-        filename = 'lyrics.csv'
-        if os.path.exists(filename): # If file already exists and we resume work, open file in append mode and do not print header
-            self.file = open(filename, 'ab')
+        if os.path.exists(self.filename): # If file already exists and we resume work, open file in append mode and do not print header
+            self.file = open(self.filename, 'ab')
             self.exporter = CsvItemExporter(self.file, False)
             self.exporter.start_exporting()
         else: # Create new csv file
-            self.file = open(filename, 'w+b')
+            self.file = open(self.filename, 'w+b')
             self.exporter = CsvItemExporter(self.file)
             self.exporter.start_exporting()
 
