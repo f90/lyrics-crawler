@@ -8,20 +8,20 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
 
-BOT_NAME = 'metrolyrics'
+BOT_NAME = 'lyrics-scraper'
 
-SPIDER_MODULES = ['metrolyrics.spiders']
-NEWSPIDER_MODULE = 'metrolyrics.spiders'
+SPIDER_MODULES = ['lyrics.spiders']
+NEWSPIDER_MODULE = 'lyrics.spiders'
 
 ITEM_PIPELINES = {
-    'metrolyrics.pipelines.LyricsPipeline': 300
+    'lyrics.pipelines.LyricsPipeline': 300
 }
 
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_TARGET_CONCURRENCY = 2
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 
 EXPORT_PATH = 'lyrics.csv' # Filepath of lyrics CSV
-SONGS_PER_ARTIST = 3 # First X lyrics of each artist are going to be crawled (if available)
+SONGS_PER_ARTIST = 3 # For metrolyrics: First X lyrics of each artist are going to be crawled (if available)
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'azlyrics (+http://www.yourdomain.com)'
