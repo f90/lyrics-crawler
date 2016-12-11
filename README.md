@@ -1,4 +1,4 @@
-# LyricsCrawler (for Metrolyrics)
+# LyricsCrawler (for Metrolyrics and Lyricswiki)
 
 Automatically downloads lyrics for the top X songs of each artist on the metrolyrics database, and saves them into a CSV along with the artist, song name, and URL.
 
